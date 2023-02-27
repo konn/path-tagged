@@ -330,7 +330,7 @@ absdir :: QuasiQuoter
 absdir = wrapPathQQ P.absdir
 
 toFilePath :: PathTo e b t -> FilePath
-toFilePath = coerce toFilePath
+toFilePath = coerce P.toFilePath
 
 fromAbsDir :: PathTo e Abs Dir -> FilePath
 fromAbsDir = P.fromAbsDir . untagPath
