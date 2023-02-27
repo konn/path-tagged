@@ -21,6 +21,7 @@
 module Path.Tagged (
   -- * Types
   PathTo (..),
+  ToSubpath,
   retagPath,
   Base (..),
   Untag,
@@ -195,7 +196,12 @@ replaceProperPrefix' ::
   m (PathTo child b' t)
 replaceProperPrefix' src dst fp = (dst </>) <$> stripProperPrefix src fp
 
-parent :: PathTo e b t -> PathTo (Parent e) b Dir
+type ToSubpath :: forall {k}. Base k -> Base (Subpath k)
+type family ToSubpath a where
+  ToSubpath 'Abs = 'Abs
+  ToSubpath ('RelTo e) = 'RelTo (Entry e)
+
+parent :: PathTo e b t -> PathTo (ParentOf e) (ToSubpath b) Dir
 parent = coerce P.parent
 
 filename :: PathTo e b File -> PathTo (Entry e) (RelTo (ParentOf e)) File
