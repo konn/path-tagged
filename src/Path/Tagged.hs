@@ -96,7 +96,8 @@ module Path.Tagged (
 
 import Control.DeepSeq (NFData)
 import Control.Monad.Catch (MonadThrow)
-import Data.Aeson (FromJSON, FromJSONKey, ToJSON)
+import Data.Aeson (FromJSON, FromJSONKey, ToJSON, Value)
+import qualified Data.Aeson.Types as J
 import qualified Data.Bifunctor as Bi
 import Data.Coerce (coerce)
 import Data.Functor ((<&>))
@@ -265,6 +266,30 @@ data SomeBase e b t
   | IsRel (PathTo e (RelTo b) t)
   deriving (Show, Eq, Ord, Generic)
   deriving anyclass (NFData, Hashable)
+
+instance FromJSON (SomeBase e b Dir) where
+  parseJSON = parseJSONWith parseSomeDir
+  {-# INLINE parseJSON #-}
+
+instance FromJSON (SomeBase e b File) where
+  parseJSON = parseJSONWith parseSomeFile
+  {-# INLINE parseJSON #-}
+
+instance ToJSON (SomeBase e b t) where
+  toJSON = J.toJSON . prjSomeBase toFilePath
+
+parseJSONWith ::
+  (Show e, FromJSON a) =>
+  (a -> Either e b) ->
+  Value ->
+  J.Parser b
+parseJSONWith f x =
+  do
+    fp <- J.parseJSON x
+    case f fp of
+      Right p -> return p
+      Left e -> fail (show e)
+{-# INLINE parseJSONWith #-}
 
 untagSomeBase :: SomeBase e b t -> P.SomeBase t
 untagSomeBase (IsAbs (PathTo fp)) = P.Abs fp
