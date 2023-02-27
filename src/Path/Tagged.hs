@@ -138,7 +138,17 @@ type Parent = 'Parent
 
 type ParentOf e = 'Parent ('Entry e)
 
-retagPath :: PathTo p b t -> PathTo p' b t
+type Retagged' :: forall k k' -> Base k -> Base k'
+type family Retagged' k k' bk where
+  Retagged' k k a = a
+  Retagged' k k' Abs = Abs
+  Retagged' k k' (RelTo p) =
+    TypeError ('Text "Different kind of path cannot be rettaged with relative base: " ':<>: 'ShowType (RelTo p))
+
+type Retagged :: forall {k} {k'}. Base k -> Base k'
+type Retagged (a :: Base k) = Retagged' k k' a :: Base k'
+
+retagPath :: PathTo p b t -> PathTo p' (Retagged b) t
 retagPath = coerce
 
 deriving newtype instance FromJSON (PathTo k (RelTo b) File)
