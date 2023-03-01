@@ -218,7 +218,7 @@ filename :: PathTo e b File -> PathTo (Entry e) (RelTo (ParentOf e)) File
 filename = coerce P.filename
 
 dirname :: PathTo e b Dir -> PathTo (Entry e) (RelTo (ParentOf e)) Dir
-dirname = coerce P.filename
+dirname = coerce P.dirname
 
 addExtension :: forall e' m e b. MonadThrow m => String -> PathTo e b File -> m (PathTo e' b File)
 addExtension ext = fmap PathTo . P.addExtension ext . coerce
